@@ -96,8 +96,6 @@ input_support.py — tab completion, command highlighting
 learning.py      — few-shot memory and DPO pair collection
 ```
 
-LM Studio models can't reliably use the OpenAI `tools` parameter in streaming mode — they return empty arguments. So OpenAgent puts the call format in the system prompt, the model writes tool calls as plain text, and a parser extracts them from 6 different formats.
-
 When the model misbehaves (gives instructions instead of acting, asks the user to share a file, says "I created the file" without actually calling a tool) — a detector catches it and sends a nudge with the correct format. Three escalation levels, then stop.
 
 Clean runs (0 nudges, 0 errors) are saved as few-shot examples in `data/few_shot.jsonl`. Bad runs are saved as DPO pairs in `data/dpo_pairs.jsonl`.
