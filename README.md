@@ -33,7 +33,7 @@ OpenAgent reads, writes, and edits files, runs shell commands, searches the web,
 ### Windows
 
 ```bash
-git clone https://github.com/user/OpenAgent.git
+git clone https://github.com/amberoad666/OpenAgent.git
 cd OpenAgent
 install.bat
 ```
@@ -49,7 +49,7 @@ oa
 ### Linux / macOS
 
 ```bash
-git clone https://github.com/user/OpenAgent.git
+git clone https://github.com/amberoad666/OpenAgent.git
 cd OpenAgent
 chmod +x install.sh oa open-agent
 ./install.sh
