@@ -2,7 +2,7 @@
 
 Terminal AI coding assistant running on local LLMs via [LM Studio](https://lmstudio.ai/). Your code never leaves your machine.
 
-You describe a task, the agent reads files, writes code, runs commands, fixes bugs on its own. If it doesn't know how — it searches the web via DuckDuckGo.
+You describe a task, the agent reads files, writes code, runs commands, fixes bugs on its own. If it doesn't know how - it searches the web via DuckDuckGo.
 
 ## Quick Start
 
