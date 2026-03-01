@@ -1,187 +1,107 @@
 # OpenAgent
 
-Terminal AI coding assistant powered by local LLMs via [LM Studio](https://lmstudio.ai/).
+AI-ассистент для написания кода в терминале. Работает через локальные LLM в [LM Studio](https://lmstudio.ai/) — код не уходит ни в какое облако.
 
-OpenAgent reads, writes, and edits files, runs shell commands, searches the web, and manages your codebase — all from the terminal, with no cloud API needed.
+Пишешь задачу текстом, агент сам читает файлы, создаёт код, запускает команды, правит баги. Если не знает как — гуглит через DuckDuckGo.
 
-## Features
+## Быстрый старт
 
-- **Fully local** — runs against LM Studio on `localhost`, your code never leaves your machine
-- **Autonomous agent** — doesn't ask questions, uses tools to find information itself
-- **7 built-in tools** — `write_file`, `read_file`, `edit_file`, `run_bash`, `list_files`, `search_files`, `web_search`
-- **Universal tool parser** — handles multiple LLM output formats (`<function=...>`, `<tool_call>`, Python-style calls, etc.)
-- **Streaming output** — real-time response with syntax-highlighted code blocks
-- **Smart behavior detection** — catches and corrects 5 types of bad model behavior (tutorial mode, lazy responses, fake actions, shell-in-text, duplicates)
-- **Codebase RAG** — auto-indexes your project and injects relevant files as context
-- **Self-learning** — collects few-shot examples from successful runs and DPO pairs from corrections
-- **Session management** — save/load conversation sessions
-- **Persistent /add** — pin files to context that survive conversation compaction
-- **File undo** — revert the last file change with `/undo`
-- **YOLO mode** — skip all confirmation prompts for faster iteration
-
-## Requirements
-
-- Python 3.9+
-- [LM Studio](https://lmstudio.ai/) running with a loaded model
-- Recommended models:
-  - `qwen/qwen3.5-35b-a3b` — best results, passes quality checks on first attempt
-  - `qwen2.5-coder-32b` — strong coding model
-  - `deepseek-coder-v2` — good alternative
-
-## Installation
-
-### Windows
+Нужен Python 3.9+ и запущенный [LM Studio](https://lmstudio.ai/) с загруженной моделью.
 
 ```bash
 git clone https://github.com/amberoad666/OpenAgent.git
 cd OpenAgent
-install.bat
-```
-
-This adds OpenAgent to your PATH and installs dependencies. After restarting the terminal:
-
-```bash
-open-agent
-# or
-oa
-```
-
-### Linux / macOS
-
-```bash
-git clone https://github.com/amberoad666/OpenAgent.git
-cd OpenAgent
-chmod +x install.sh oa open-agent
-./install.sh
-```
-
-Then:
-
-```bash
-open-agent
-# or
-oa
-```
-
-### Manual
-
-```bash
-pip install rich prompt_toolkit
+pip install -r requirements.txt
 python main.py
 ```
 
-## Usage
+Или через установщик (добавит в PATH):
 
-1. Start LM Studio and load a model
-2. Run `open-agent` (or `oa`, or `python main.py`)
-3. Type your task in natural language
+```bash
+# Windows
+install.bat
 
-```
-> create a Flask REST API for a todo app with SQLite
-
-> find and fix bugs in my project
-
-> add dark mode to index.html using Tailwind
+# Linux / macOS
+chmod +x install.sh && ./install.sh
 ```
 
-### Keyboard
+После этого запускается как `open-agent` или `oa` из любой папки.
 
-| Key | Action |
-|---|---|
-| `Enter` | Send message |
-| `\` + `Enter` | New line |
-| `Esc` + `Enter` | Send multiline message |
-| `Right Arrow` | Accept suggested next action |
-| `Esc` | Stop current generation |
-| `Ctrl+C` | Stop running command |
+## Что умеет
 
-### Commands
-
-| Command | Description |
-|---|---|
-| `/help` | Show help |
-| `/yolo` | Toggle skip-permissions mode |
-| `/add <path>` | Pin file/dir/glob to context (persists through compaction) |
-| `/add` | List pinned files |
-| `/undo` | Undo last file change |
-| `/save` | Save code blocks from last response |
-| `/model` | Switch to a different loaded model |
-| `/cost` | Show session token usage and speed stats |
-| `/learn` | Show self-learning statistics |
-| `/reindex` | Rebuild codebase index |
-| `/save-session [name]` | Save conversation to file |
-| `/load-session [name]` | Load a saved conversation |
-| `/clear` | Clear conversation history |
-| `/exit` | Exit |
-
-## Configuration
-
-Environment variables (all optional):
-
-| Variable | Default | Description |
-|---|---|---|
-| `OPEN_AGENT_URL` | `http://localhost:1234/v1` | LM Studio API endpoint |
-| `OPEN_AGENT_API_KEY` | `lm-studio` | API key |
-| `OPEN_AGENT_MODEL` | _(auto-detect)_ | Force a specific model |
-| `OPEN_AGENT_MAX_TOKENS` | `8192` | Max context window size |
-| `OPEN_AGENT_DEBUG` | _(off)_ | Set to `1` to enable debug logging to `debug.log` |
-
-### Project Memory
-
-Create a `.openagent` file in your project root to give the agent persistent instructions:
+Ставишь задачу — агент делает. Не спрашивает уточнений, не даёт инструкции «создайте файл X» — сам вызывает инструменты и создаёт файлы.
 
 ```
-This is a Django project using PostgreSQL.
-Always use pytest for tests.
-Follow PEP 8 style.
+> сделай REST API на Flask для интернет-магазина с SQLite
+
+> найди баги в проекте и исправь
+
+> добавь тёмную тему на сайт через Tailwind
 ```
 
-OpenAgent will automatically load this file on startup and after `/clear`.
+Работает в цикле: вызвал инструмент → получил результат → решает что дальше → повторяет пока не сделает. Подтверждение запрашивается только на запись файлов и выполнение команд (отключается через `/yolo`).
 
-## Architecture
+## Модели
+
+Проверенные модели:
+
+- **qwen3.5-35b-a3b** — лучший результат, с первой попытки делает нормально
+- **qwen2.5-coder-32b** — хорошо пишет код
+- **deepseek-coder-v2** — тоже работает
+
+Модели поменьше (7B, 14B) тоже запустятся, но будут чаще ошибаться и требовать коррекций.
+
+## Команды
 
 ```
-main.py          Core agent loop, tool parsing, streaming, behavior detection
-config.py        System prompt, API config, rules
-client.py        LM Studio API client (chat, streaming, summarization)
-executor.py      Tool execution with confirmation flow
-tools.py         Tool implementations (file ops, bash, web search)
-ui.py            Rich terminal UI (panels, diffs, syntax highlighting)
-indexer.py       TF-IDF codebase indexer for auto-context
-input_support.py Tab completion, command highlighting, auto-suggest
-learning.py      Few-shot memory + DPO data collection
+/yolo          — режим без подтверждений
+/add <файл>    — закрепить файл в контексте (не теряется при сжатии)
+/add           — показать закреплённые файлы
+/undo          — откатить последнее изменение файла
+/model         — переключить модель
+/cost          — статистика токенов и скорости
+/save-session  — сохранить диалог
+/load-session  — загрузить диалог
+/clear         — очистить историю
 ```
 
-### How Tool Calling Works
+## Конфигурация
 
-LM Studio models don't reliably support the OpenAI `tools` API parameter in streaming mode. Instead, OpenAgent:
+Переменные окружения (необязательные):
 
-1. Shows the model tool definitions in the system prompt with example format
-2. The model emits tool calls as **text** in its response
-3. `_parse_tool_calls_from_text()` extracts tool calls from 6 different formats
-4. Stream output is suppressed once a tool call pattern is detected
-5. Tools execute with user confirmation (or auto in YOLO mode)
-6. Results are sent back as user messages for the next turn
+```bash
+OPEN_AGENT_URL=http://localhost:1234/v1   # эндпоинт LM Studio
+OPEN_AGENT_MODEL=qwen/qwen3.5-35b-a3b    # принудительно задать модель
+OPEN_AGENT_MAX_TOKENS=8192               # размер контекстного окна
+```
 
-### Behavior Detection
+Файл `.openagent` в корне проекта — инструкции, которые агент загружает автоматически:
 
-OpenAgent detects and corrects common LLM failure modes:
+```
+Проект на Django + PostgreSQL.
+Для тестов использовать pytest.
+```
 
-| Detector | What it catches |
-|---|---|
-| Tutorial mode | Model gives step-by-step instructions instead of creating files |
-| Lazy/asking | Model asks user for info instead of using tools |
-| Fake actions | Model claims it did something but didn't call any tool |
-| Shell in text | Model writes bash commands as text instead of calling `run_bash` |
-| Duplicates | Model repeats the same tool call with identical arguments |
+## Как устроен
 
-Each detector sends an escalating nudge (3 levels) with the correct tool format example.
+```
+main.py          — основной цикл, парсинг tool calls, стриминг
+config.py        — системный промпт, конфиг
+client.py        — клиент LM Studio API
+executor.py      — выполнение инструментов
+tools.py         — реализация инструментов (файлы, bash, поиск)
+ui.py            — интерфейс (Rich)
+indexer.py       — TF-IDF индекс кодовой базы для авто-контекста
+input_support.py — автодополнение, подсветка команд
+learning.py      — few-shot память и сбор DPO-пар
+```
 
-### Self-Learning
+LM Studio модели не умеют нормально использовать OpenAI `tools` параметр в стриминге — возвращают пустые аргументы. Поэтому OpenAgent показывает формат вызова в системном промпте, модель пишет tool call как текст, а парсер извлекает вызовы из 6 разных форматов.
 
-- **Few-shot**: Clean runs (0 nudges, 0 errors) are saved to `data/few_shot.jsonl` and injected as examples for similar future tasks
-- **DPO**: After 3+ nudges, bad/good response pairs are collected in `data/dpo_pairs.jsonl` for potential fine-tuning
+Если модель начинает вести себя не так (даёт инструкции вместо действий, просит пользователя скинуть файл, говорит «я создал файл» но не вызвал инструмент) — детектор это ловит и отправляет nudge с правильным форматом. Три уровня эскалации, потом стоп.
 
-## License
+Успешные прогоны (0 nudge-ей, 0 ошибок) сохраняются как few-shot примеры в `data/few_shot.jsonl`. Плохие — как DPO-пары в `data/dpo_pairs.jsonl`.
+
+## Лицензия
 
 MIT
